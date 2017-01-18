@@ -26,18 +26,24 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.WindowManager;
+
+import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.ChecksumException;
+import com.google.zxing.DecodeHintType;
 import com.google.zxing.FormatException;
 import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.ResultPoint;
+import com.google.zxing.aztec.AztecReader;
 import com.google.zxing.client.android.camera.CameraManager;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeReader;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.Vector;
 
 /**
  * QRCodeReaderView Class which uses ZXING lib and let you easily integrate a QR decoder view.
@@ -58,6 +64,7 @@ public class QRCodeReaderView extends SurfaceView
   private static final String TAG = QRCodeReaderView.class.getName();
 
   private QRCodeReader mQRCodeReader;
+  private AztecReader mAztecReader;
   private int mPreviewWidth;
   private int mPreviewHeight;
   private CameraManager mCameraManager;
@@ -192,6 +199,7 @@ public class QRCodeReaderView extends SurfaceView
 
     try {
       mQRCodeReader = new QRCodeReader();
+      mAztecReader = new AztecReader();
       mCameraManager.startPreview();
     } catch (Exception e) {
       Log.e(TAG, "Exception: " + e.getMessage());
@@ -333,6 +341,17 @@ public class QRCodeReaderView extends SurfaceView
         Log.d(TAG, "FormatException", e);
       } finally {
         view.mQRCodeReader.reset();
+      }
+
+      try {
+        return view.mAztecReader.decode(bitmap);
+      } catch (NotFoundException e) {
+        Log.d(TAG, "No QR Code found");
+      } catch (FormatException e) {
+        Log.d(TAG, "FormatException", e);
+      } finally {
+        view.mQRCodeReader.reset();
+        view.mAztecReader.reset();
       }
 
       return null;
